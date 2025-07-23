@@ -47,8 +47,9 @@ class AMQPMate {
 
   #createDefaultLogger() {
     const levels = ['info', 'error', 'warn', 'debug'];
+    const prefix = '[Database]';
     return Object.fromEntries(
-      levels.map(level => [level, (msg, meta = {}) => console[level](`[${level.toUpperCase()}] ${msg}`, meta)])
+      levels.map(level => [level, (msg, meta = {}) => console[level](`${prefix} ${level.toUpperCase()} ${msg}`, meta)])
     );
   }
 

@@ -1,0 +1,50 @@
+{
+  "name": "amqpmate",
+  "version": "1.0.0",
+  "description": "🚀 Легковесная и мощная обертка над AMQP для работы с очередями сообщений",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "node example.js"
+  },
+  "keywords": [
+    "amqp",
+    "rabbitmq",
+    "queue",
+    "messaging",
+    "microservices",
+    "event-driven",
+    "pub-sub",
+    "message-broker",
+    "nodejs",
+    "javascript"
+  ],
+  "author": {
+    "name": "Eugene Surkov",
+    "email": "esurkov1@gmail.com",
+    "url": "https://github.com/esurkov1"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/esurkov1/amqpmate#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esurkov1/amqpmate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/esurkov1/amqpmate/issues"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "index.js",
+    "example.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "amqplib": "^0.10.3"
+  },
+  "devDependencies": {},
+  "peerDependencies": {}
+}

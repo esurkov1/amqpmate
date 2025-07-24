@@ -12,7 +12,7 @@ class AMQPMate {
     this.startTime = Date.now();
     
     // Конфигурация
-    this.logger = options.logger || this.#createDefaultLogger();
+    this.logger = options.logger || this.#logger();
     this.reconnectOptions = {
       enabled: true,
       maxRetries: 5,
@@ -45,13 +45,21 @@ class AMQPMate {
     this.start();
   }
 
-  #createDefaultLogger() {
-    const levels = ['info', 'error', 'warn', 'debug'];
-    const prefix = '[Database]';
-    return Object.fromEntries(
-      levels.map(level => [level, (msg, meta = {}) => console[level](`${prefix} ${level.toUpperCase()} ${msg}`, meta)])
-    );
-  }
+  #logger() {
+    const prefix = '[AMQP]';
+    const logger = (type) => (msg, meta = {}) => {
+        const logMethod = console[type] || console.log;
+        logMethod(`${prefix} ${msg}`, meta);
+    };
+
+    return {
+        log: logger('log'),
+        info: logger('info'),
+        error: logger('error'),
+        warn: logger('warn'),
+        debug: logger('debug')
+    };
+}
 
   #setupProcessHandlers() {
     const gracefulShutdown = async (signal) => {

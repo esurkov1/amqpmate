@@ -1,30 +1,38 @@
 const AMQPMate = require('./index');
 
 async function main() {
-  // Create instance using configuration object (new approach)
-  const amqp = new AMQPMate({
-    host: 'localhost',
-    port: 5672,
-    // username: 'user',    // uncomment if authentication needed
-    // password: 'pass',    // uncomment if authentication needed
-    // vhost: '/',          // default vhost
-    
-    reconnect: {
-      maxRetries: 10,
-      delay: 2000,
-      backoffMultiplier: 1.5
-    },
-    
-    logger: {
-      title: 'AMQPExample',
-      level: 'debug',
-      isDev: true
-    }
-  });
+  // Create instance using default connection
+  const amqp = new AMQPMate();
 
-  // Alternative approaches:
-  // const amqp = new AMQPMate('amqp://localhost:5672');  // URL string
-  // const amqp = new AMQPMate({ url: 'amqp://localhost:5672' });  // URL in config
+  // Alternative: Connection with URL
+  // const amqp = new AMQPMate({ url: 'amqp://localhost:5672' });
+
+  // Alternative: Connection with parameters
+  // const amqp = new AMQPMate({
+  //   host: 'localhost',
+  //   port: 5672,
+  //   // username: 'user',    // uncomment if authentication needed
+  //   // password: 'pass',    // uncomment if authentication needed
+  //   // vhost: '/',          // default vhost
+  // });
+
+  // Full configuration example
+  // const amqp = new AMQPMate({
+  //   host: 'localhost',
+  //   port: 5672,
+  //   
+  //   reconnect: {
+  //     maxRetries: 10,
+  //     delay: 2000,
+  //     backoffMultiplier: 1.5
+  //   },
+  //   
+  //   logger: {
+  //     title: 'AMQPExample',
+  //     level: 'debug',
+  //     isDev: true
+  //   }
+  // });
 
   // Add listeners
   amqp.listen('user.created', async (data) => {

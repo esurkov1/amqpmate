@@ -2,21 +2,19 @@ const amqp = require('amqplib');
 const pino = require('pino');
 
 class AMQPMate {
-  constructor(config = {}) {
-    // Handle both URL string and configuration object
-    if (typeof config === 'string') {
-      // Backward compatibility - URL string
-      this.url = config;
-      config = {}; // Use default options
+  constructor(config = { url: 'amqp://localhost' }) {
+    // Validate config is an object
+    if (typeof config !== 'object' || config === null) {
+      throw new Error('Configuration must be an object');
+    }
+
+    // Prioritize explicit URL over generated URL
+    if (config.url) {
+      this.url = config.url;
+    } else if (config.host) {
+      this.url = this.#buildUrl(config);
     } else {
-      // Configuration object
-      if (config.url) {
-        this.url = config.url;
-      } else if (config.host) {
-        this.url = this.#buildUrl(config);
-      } else {
-        this.url = 'amqp://localhost'; // Default URL
-      }
+      this.url = 'amqp://localhost'; // Default fallback
     }
     
     this.connection = null;

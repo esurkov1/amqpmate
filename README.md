@@ -16,7 +16,7 @@ AMQPMate is a production-ready Node.js library that simplifies working with AMQP
 - **Graceful shutdown** with pending message completion
 - **Retry mechanism** for message sending with exponential backoff
 - **Structured logging** with Pino (development and production modes)
-- **Flexible connection** options (URL or parameters)
+- **Flexible connection** options
 - **Simple API** for quick integration
 - **TypeScript ready** (types included)
 
@@ -31,11 +31,16 @@ npm install amqpmate
 ```javascript
 const AMQPMate = require('amqpmate');
 
-// Simple connection
-const amqp = new AMQPMate('amqp://localhost');
+// Default connection (localhost)
+const amqp = new AMQPMate();
 
-// Or with parameters
-const amqp2 = new AMQPMate({
+// Connection with URL
+const amqp2 = new AMQPMate({ 
+  url: 'amqp://localhost:5672' 
+});
+
+// Connection with parameters
+const amqp3 = new AMQPMate({
   host: 'localhost',
   port: 5672,
   username: 'user',
@@ -57,23 +62,36 @@ await amqp.send('user.created', {
 
 ## Configuration Options
 
-### URL String (Simple)
+### Default Connection
 ```javascript
-const amqp = new AMQPMate('amqp://user:pass@localhost:5672/vhost');
+// Uses amqp://localhost by default
+const amqp = new AMQPMate();
 ```
 
-### Configuration Object (Advanced)
+### URL Connection
+```javascript
+const amqp = new AMQPMate({ 
+  url: 'amqp://user:pass@localhost:5672/vhost' 
+});
+```
+
+### Parameters Connection
 ```javascript
 const amqp = new AMQPMate({
-  // Connection via URL
-  url: 'amqp://localhost:5672',
-  
-  // OR Connection via parameters
   host: 'localhost',     // required if no url
   port: 5672,            // default: 5672
   username: 'user',      // optional
   password: 'pass',      // optional
-  vhost: '/',            // default: '/'
+  vhost: '/'             // default: '/'
+});
+```
+
+### Full Configuration
+```javascript
+const amqp = new AMQPMate({
+  // Connection settings
+  host: 'localhost',
+  port: 5672,
   
   // Logger configuration
   logger: {
@@ -106,7 +124,16 @@ new AMQPMate(config)
 ```
 
 **Parameters:**
-- `config` (string|object) - AMQP connection URL string or configuration object
+- `config` (object) - Configuration object with connection settings
+  - `url` (string, optional) - Full AMQP connection URL
+  - `host` (string, optional) - Hostname for connection
+  - `port` (number, optional) - Port number (default: 5672)
+  - `username` (string, optional) - Connection username
+  - `password` (string, optional) - Connection password
+  - `vhost` (string, optional) - Virtual host (default: '/')
+  - `logger` (object, optional) - Logger configuration
+  - `reconnect` (object, optional) - Reconnection settings
+  - `listeners` (array, optional) - Initial listeners
 
 ### Core Methods
 

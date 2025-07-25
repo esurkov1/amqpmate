@@ -31,10 +31,10 @@ npm install amqpmate
 ```javascript
 const AMQPMate = require('amqpmate');
 
-// Create instance with URL
+// Simple connection
 const amqp = new AMQPMate('amqp://localhost');
 
-// Or with connection parameters
+// Or with parameters
 const amqp2 = new AMQPMate({
   host: 'localhost',
   port: 5672,
@@ -55,40 +55,39 @@ await amqp.send('user.created', {
 });
 ```
 
-## Connection Options
+## Configuration Options
 
-### URL Connection
+### URL String (Simple)
 ```javascript
 const amqp = new AMQPMate('amqp://user:pass@localhost:5672/vhost');
 ```
 
-### Parameter Connection
+### Configuration Object (Advanced)
 ```javascript
 const amqp = new AMQPMate({
-  host: 'localhost',     // required
+  // Connection via URL
+  url: 'amqp://localhost:5672',
+  
+  // OR Connection via parameters
+  host: 'localhost',     // required if no url
   port: 5672,            // default: 5672
   username: 'user',      // optional
   password: 'pass',      // optional
-  vhost: '/'             // default: '/'
-});
-```
-
-### Advanced Configuration
-```javascript
-const amqp = new AMQPMate('amqp://localhost', {
-  // Reconnection settings
-  reconnect: {
-    enabled: true,
-    maxRetries: 10,
-    delay: 2000,
-    backoffMultiplier: 1.5
-  },
+  vhost: '/',            // default: '/'
   
   // Logger configuration
   logger: {
     title: 'MyService',        // Logger name (default: class name)
     level: 'info',             // Log level (default: 'info')
     isDev: false               // Use JSON format for production (default: true)
+  },
+  
+  // Reconnection settings
+  reconnect: {
+    enabled: true,
+    maxRetries: 10,
+    delay: 2000,
+    backoffMultiplier: 1.5
   },
   
   // Listeners in constructor
@@ -103,12 +102,11 @@ const amqp = new AMQPMate('amqp://localhost', {
 
 ### Constructor
 ```javascript
-new AMQPMate(connectionConfig, options)
+new AMQPMate(config)
 ```
 
 **Parameters:**
-- `connectionConfig` (string|object) - AMQP connection URL or parameters object
-- `options` (object) - Optional configuration (reconnect, logger, listeners)
+- `config` (string|object) - AMQP connection URL string or configuration object
 
 ### Core Methods
 
@@ -130,17 +128,9 @@ Performs graceful shutdown, waiting for pending messages to complete.
 #### `close()`
 Immediately closes the AMQP connection.
 
-## Logger Configuration
-
-- **title** (string): Name displayed in logs (default: class name)
-- **level** (string): Logging level - 'trace', 'debug', 'info', 'warn', 'error', 'fatal' (default: 'info')
-- **isDev** (boolean): 
-  - `true`: Uses pino-pretty for colored, human-readable output (development)
-  - `false`: Uses JSON format for structured logging (production)
-
 ## Examples
 
-### Microservice with Parameters
+### Environment-based Configuration
 ```javascript
 const AMQPMate = require('amqpmate');
 
@@ -149,12 +139,16 @@ const amqp = new AMQPMate({
   port: process.env.RABBITMQ_PORT || 5672,
   username: process.env.RABBITMQ_USER,
   password: process.env.RABBITMQ_PASS,
-  vhost: process.env.RABBITMQ_VHOST || '/'
-}, {
+  vhost: process.env.RABBITMQ_VHOST || '/',
+  
   logger: {
     title: 'UserService',
     level: process.env.LOG_LEVEL || 'info',
     isDev: process.env.NODE_ENV !== 'production'
+  },
+  
+  reconnect: {
+    maxRetries: 20
   }
 });
 

@@ -2,12 +2,21 @@ const amqp = require('amqplib');
 const pino = require('pino');
 
 class AMQPMate {
-  constructor(connectionConfig, options = {}) {
-    // Handle both URL string and connection parameters object
-    if (typeof connectionConfig === 'string') {
-      this.url = connectionConfig;
+  constructor(config = {}) {
+    // Handle both URL string and configuration object
+    if (typeof config === 'string') {
+      // Backward compatibility - URL string
+      this.url = config;
+      config = {}; // Use default options
     } else {
-      this.url = this.#buildUrl(connectionConfig);
+      // Configuration object
+      if (config.url) {
+        this.url = config.url;
+      } else if (config.host) {
+        this.url = this.#buildUrl(config);
+      } else {
+        this.url = 'amqp://localhost'; // Default URL
+      }
     }
     
     this.connection = null;
@@ -23,7 +32,7 @@ class AMQPMate {
       title: this.constructor.name,
       level: 'info',
       isDev: true,
-      ...options.logger
+      ...config.logger
     };
     
     this.logger = this.#createLogger(loggerConfig);
@@ -34,7 +43,7 @@ class AMQPMate {
       maxRetries: 5,
       delay: 1000,
       backoffMultiplier: 2,
-      ...options.reconnect
+      ...config.reconnect
     };
     
     this.reconnectAttempts = 0;
@@ -53,8 +62,8 @@ class AMQPMate {
     
     this.#setupProcessHandlers();
     
-    if (options.listeners) {
-      options.listeners.forEach(([topic, handler]) => {
+    if (config.listeners) {
+      config.listeners.forEach(([topic, handler]) => {
         this.listen(topic, handler);
       });
     }

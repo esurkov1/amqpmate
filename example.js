@@ -1,7 +1,7 @@
 const AMQPMate = require('./index');
 
 async function main() {
-  // Создаем экземпляр с настройками переподключения
+  // Create instance with reconnection settings and logger configuration
   const amqp = new AMQPMate('amqp://localhost', {
     reconnect: {
       maxRetries: 10,
@@ -9,32 +9,31 @@ async function main() {
       backoffMultiplier: 1.5
     },
     logger: {
-      info: (msg, meta) => console.log(`📢 ${msg}`, meta),
-      error: (msg, meta) => console.error(`❌ ${msg}`, meta),
-      warn: (msg, meta) => console.warn(`⚠️  ${msg}`, meta),
-      debug: (msg, meta) => console.debug(`🔍 ${msg}`, meta)
+      title: 'AMQPExample',
+      level: 'debug',
+      isDev: true
     }
   });
 
-  // Добавляем слушателей
+  // Add listeners
   amqp.listen('user.created', async (data) => {
-    console.log('🆕 Новый пользователь:', data);
-    // Имитируем долгую обработку
+    console.log('New user:', data);
+    // Simulate long processing
     await new Promise(resolve => setTimeout(resolve, 1000));
   });
 
   amqp.listen('order.placed', async (data) => {
-    console.log('🛒 Новый заказ:', data);
-    // Иногда эмулируем ошибку для демонстрации retry
+    console.log('New order:', data);
+    // Sometimes simulate error for retry demonstration
     if (Math.random() < 0.3) {
-      throw new Error('Временная ошибка обработки заказа');
+      throw new Error('Temporary order processing error');
     }
   });
 
-  // Ждем подключения
+  // Wait for connection
   await new Promise(resolve => setTimeout(resolve, 2000));
 
-  // Отправляем тестовые сообщения
+  // Send test messages
   try {
     await amqp.send('user.created', {
       id: 123,
@@ -48,44 +47,44 @@ async function main() {
       amount: 99.99
     });
 
-    console.log('📊 Отправлено тестовых сообщений');
+    console.log('Test messages sent');
   } catch (error) {
-    console.error('Ошибка отправки:', error.message);
+    console.error('Send error:', error.message);
   }
 
-  // Показываем метрики каждые 5 секунд
+  // Show metrics every 5 seconds
   const metricsInterval = setInterval(() => {
     const metrics = amqp.getMetrics();
-    console.log('\n📈 Метрики:', {
-      отправлено: metrics.messagesSent,
-      получено: metrics.messagesReceived,
-      обработано: metrics.messagesProcessed,
-      ошибки: metrics.errors,
-      среднее_время_обработки: `${metrics.avgProcessingTime}ms`,
-      время_работы: `${Math.round(metrics.uptime / 1000)}s`,
-      переподключения: metrics.reconnections
+    console.log('\nMetrics:', {
+      sent: metrics.messagesSent,
+      received: metrics.messagesReceived,
+      processed: metrics.messagesProcessed,
+      errors: metrics.errors,
+      avgProcessingTime: `${metrics.avgProcessingTime}ms`,
+      uptime: `${Math.round(metrics.uptime / 1000)}s`,
+      reconnections: metrics.reconnections
     });
 
     const health = amqp.getHealthCheck();
-    console.log('🏥 Health:', health.status, {
-      подключено: health.isConnected,
-      ожидающих_сообщений: health.pendingMessages
+    console.log('Health:', health.status, {
+      connected: health.isConnected,
+      pendingMessages: health.pendingMessages
     });
   }, 5000);
 
-  // Graceful shutdown через 30 секунд для демонстрации
+  // Graceful shutdown after 30 seconds for demonstration
   setTimeout(async () => {
-    console.log('\n🔄 Демонстрация graceful shutdown...');
+    console.log('\nDemonstrating graceful shutdown...');
     clearInterval(metricsInterval);
     
-    // Отправляем несколько сообщений перед shutdown
+    // Send several messages before shutdown
     for (let i = 0; i < 3; i++) {
       await amqp.send('user.created', { id: 1000 + i, name: `User${i}` });
     }
     
-    // Graceful shutdown обработает все ожидающие сообщения
+    // Graceful shutdown will process all pending messages
     await amqp.gracefulShutdown(15000);
-    console.log('✅ Приложение завершено');
+    console.log('Application finished');
     process.exit(0);
   }, 30000);
 }

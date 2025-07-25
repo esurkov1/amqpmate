@@ -1,7 +1,7 @@
 {
   "name": "amqpmate",
   "version": "1.0.2",
-  "description": "🚀 Легковесная и мощная обертка над AMQP для работы с очередями сообщений",
+  "description": "A lightweight and powerful AMQP wrapper for message queue operations",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -43,8 +43,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "amqplib": "^0.10.3"
-  },
-  "devDependencies": {},
-  "peerDependencies": {}
+    "amqplib": "^0.10.3",
+    "pino": "^8.17.0",
+    "pino-pretty": "^10.3.0"
+  }
 }

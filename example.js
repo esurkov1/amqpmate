@@ -1,8 +1,14 @@
 const AMQPMate = require('./index');
 
 async function main() {
-  // Create instance with reconnection settings and logger configuration
-  const amqp = new AMQPMate('amqp://localhost', {
+  // Create instance using connection parameters
+  const amqp = new AMQPMate({
+    host: 'localhost',
+    port: 5672,
+    // username: 'user',    // uncomment if authentication needed
+    // password: 'pass',    // uncomment if authentication needed
+    // vhost: '/'           // default vhost
+  }, {
     reconnect: {
       maxRetries: 10,
       delay: 2000,
@@ -14,6 +20,9 @@ async function main() {
       isDev: true
     }
   });
+
+  // Alternative: Create instance using URL
+  // const amqp = new AMQPMate('amqp://localhost:5672');
 
   // Add listeners
   amqp.listen('user.created', async (data) => {

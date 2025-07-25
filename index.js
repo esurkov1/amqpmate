@@ -2,8 +2,14 @@ const amqp = require('amqplib');
 const pino = require('pino');
 
 class AMQPMate {
-  constructor(url, options = {}) {
-    this.url = url;
+  constructor(connectionConfig, options = {}) {
+    // Handle both URL string and connection parameters object
+    if (typeof connectionConfig === 'string') {
+      this.url = connectionConfig;
+    } else {
+      this.url = this.#buildUrl(connectionConfig);
+    }
+    
     this.connection = null;
     this.channel = null;
     this.listeners = new Map();
@@ -53,6 +59,12 @@ class AMQPMate {
       });
     }
     this.start();
+  }
+
+  #buildUrl({ host, port = 5672, username, password, vhost = '/' }) {
+    const auth = username && password ? `${username}:${password}@` : '';
+    const vhostPath = vhost === '/' ? '' : `/${vhost}`;
+    return `amqp://${auth}${host}:${port}${vhostPath}`;
   }
 
   #createLogger(config) {

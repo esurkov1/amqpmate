@@ -1,6 +1,6 @@
 {
   "name": "amqpmate",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A lightweight and powerful AMQP wrapper for message queue operations",
   "main": "index.js",
   "scripts": {

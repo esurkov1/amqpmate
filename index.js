@@ -33,7 +33,7 @@ class AMQPMate {
       ...config.logger
     };
     
-    this.logger = this.#createLogger(loggerConfig);
+    this.logger = config.logger || this.#createLogger(loggerConfig);
     
     // Configuration
     this.reconnectOptions = {

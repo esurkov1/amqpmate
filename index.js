@@ -21,7 +21,6 @@ class AMQPMate {
     this.channel = null;
     this.listeners = new Map();
     this.isConnected = false;
-    this.isShuttingDown = false;
     this.pendingMessages = new Set();
     this.startTime = Date.now();
     
@@ -57,8 +56,6 @@ class AMQPMate {
       totalProcessingTime: 0,
       lastReconnectAt: null
     };
-    
-    this.#setupProcessHandlers();
     
     if (config.listeners) {
       config.listeners.forEach(([topic, handler]) => {
@@ -97,17 +94,7 @@ class AMQPMate {
     return pino(baseOptions);
   }
 
-  #setupProcessHandlers() {
-    const gracefulShutdown = async (signal) => {
-      this.logger.info({ signal }, 'Received shutdown signal, starting graceful shutdown');
-      await this.gracefulShutdown();
-      process.exit(0);
-    };
 
-    ['SIGTERM', 'SIGINT', 'SIGHUP'].forEach(signal => {
-      process.on(signal, gracefulShutdown);
-    });
-  }
 
   #sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -142,8 +129,8 @@ class AMQPMate {
   }
 
   async start() {
-    if (this.isConnected || this.isShuttingDown) {
-      this.logger.warn('Attempted to connect to already connected AMQP or during shutdown');
+    if (this.isConnected) {
+      this.logger.warn('Attempted to connect to already connected AMQP');
       return;
     }
 
@@ -170,7 +157,7 @@ class AMQPMate {
         attempt: this.reconnectAttempts + 1
       }, 'Failed to connect to AMQP server');
       
-      if (!this.isShuttingDown && this.reconnectOptions.enabled) {
+      if (this.reconnectOptions.enabled) {
         this.#scheduleReconnect();
       } else {
         throw error;
@@ -185,7 +172,7 @@ class AMQPMate {
       this.channel = null;
       this.connection = null;
       
-      if (!this.isShuttingDown && this.reconnectOptions.enabled) {
+      if (this.reconnectOptions.enabled) {
         this.#scheduleReconnect();
       }
     });
@@ -304,36 +291,7 @@ class AMQPMate {
     }, `sending message to ${topic}`);
   }
 
-  async gracefulShutdown(timeout = 10000) {
-    if (this.isShuttingDown) return;
-    
-    this.isShuttingDown = true;
-    this.logger.info({ 
-      pendingMessages: this.pendingMessages.size,
-      timeout
-    }, 'Starting graceful shutdown');
 
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-
-    // Wait for current messages to finish processing
-    const startWait = Date.now();
-    while (this.pendingMessages.size > 0 && (Date.now() - startWait) < timeout) {
-      this.logger.debug({ pendingMessages: this.pendingMessages.size }, 'Waiting for messages to complete');
-      await this.#sleep(100);
-    }
-
-    if (this.pendingMessages.size > 0) {
-      this.logger.warn({ 
-        pendingMessages: this.pendingMessages.size 
-      }, 'Timeout reached, some messages may not have completed processing');
-    }
-
-    await this.close();
-    this.logger.info('Graceful shutdown completed');
-  }
 
   getMetrics() {
     return {

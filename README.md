@@ -7,13 +7,13 @@
 
 ## Overview
 
-AMQPMate is a production-ready Node.js library that simplifies working with AMQP message brokers like RabbitMQ. It provides automatic connection recovery, built-in metrics, graceful shutdown handling, and structured logging with Pino. The library abstracts away low-level AMQP protocol details while preserving full control over message handling patterns, making it ideal for microservices and event-driven architectures.
+AMQPMate is a production-ready Node.js library that simplifies working with AMQP message brokers like RabbitMQ. It provides automatic connection recovery, built-in metrics, structured logging with Pino, and a clean API. The library abstracts away low-level AMQP protocol details while preserving full control over message handling patterns, making it ideal for microservices and event-driven architectures.
 
 ## Features
 
 - **Automatic reconnection** with configurable backoff strategy
 - **Built-in metrics** and health check endpoints
-- **Graceful shutdown** with pending message completion
+
 - **Retry mechanism** for message sending with exponential backoff
 - **Structured logging** with Pino (development and production modes)
 - **Flexible connection** options
@@ -149,8 +149,7 @@ Returns comprehensive metrics about the AMQP instance.
 #### `getHealthCheck()`
 Returns health status information suitable for monitoring systems.
 
-#### `gracefulShutdown(timeout)`
-Performs graceful shutdown, waiting for pending messages to complete.
+
 
 #### `close()`
 Immediately closes the AMQP connection.
@@ -193,11 +192,11 @@ app.get('/health', (req, res) => {
 });
 ```
 
-### Graceful Shutdown
+### Close Connection
 ```javascript
 process.on('SIGTERM', async () => {
-  console.log('Shutting down gracefully...');
-  await amqp.gracefulShutdown(15000);
+  console.log('Shutting down...');
+  await amqp.close();
   process.exit(0);
 });
 ```
